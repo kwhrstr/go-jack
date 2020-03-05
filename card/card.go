@@ -17,13 +17,13 @@ const (
 )
 
 type Card struct {
-	num int
+	num  int
 	suit suit
 }
 
 type Deck []Card
 
-func (s suit) String () string  {
+func (s suit) String() string {
 	switch s {
 	case Heart:
 		return "H"
@@ -38,13 +38,13 @@ func (s suit) String () string  {
 	}
 }
 
-func (c Card) String () string {
+func (c Card) String() string {
 	return c.suit.String() + strconv.Itoa(c.num)
 }
 
-func AllDeck () Deck {
+func AllDeck() Deck {
 	var cs []Card
-	for i := 1 ; i < 14; i++ {
+	for i := 1; i < 14; i++ {
 		for j := Heart; j <= Spade; j++ {
 			cs = append(cs, Card{i, j})
 		}
@@ -52,7 +52,7 @@ func AllDeck () Deck {
 	return cs
 }
 
-func (dk Deck) Shuffle() Deck{
+func (dk Deck) Shuffle() Deck {
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(dk), func(i, j int) {
 		dk[i], dk[j] = dk[j], dk[i]
@@ -60,17 +60,17 @@ func (dk Deck) Shuffle() Deck{
 	return dk
 }
 
-func (c Card) Num () int {
+func (c Card) Num() int {
 	return c.num
 }
 
-func Draw (dk Deck) (Deck, *Card, error) {
-	if len(dk) == 0 {
-		return []Card{}, nil, errors.New("empty deck")
+func Draw(dk *Deck) (*Card, error) {
+	if len(*dk) == 0 {
+		return nil, errors.New("empty deck")
 	}
-	card := dk[0]
-	dk = dk[1:]
-	return dk, &card, nil
+	card := (*dk)[0]
+	*dk = (*dk)[1:]
+	return &card, nil
 }
 
 func (c Card) BjVals() []int {

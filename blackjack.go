@@ -6,15 +6,15 @@ import (
 	. "go-jack/card"
 	"os"
 	"sort"
-	)
+)
 
-type PlayerBurst struct {}
+type PlayerBurst struct{}
 
-func (e *PlayerBurst) Error() string  {
+func (e *PlayerBurst) Error() string {
 	return "player is burned !! dealer won"
 }
 
-type DealerBurst struct {}
+type DealerBurst struct{}
 
 func (e *DealerBurst) Error() string {
 	return "dealer is burned !! player won"
@@ -23,18 +23,16 @@ func (e *DealerBurst) Error() string {
 type Game struct {
 	player []Card
 	dealer []Card
-	deck Deck
+	deck   Deck
 }
 
-func initialGame () Game {
+func initialGame() Game {
 	dk := AllDeck().Shuffle()
 	var player []Card
 	var dealer []Card
-	for i := 0; i < 2; i ++ {
-		p := new(Card)
-		d := new(Card)
-		dk, p, _ = Draw(dk)
-		dk, d, _ = Draw(dk)
+	for i := 0; i < 2; i++ {
+		p, _ := Draw(&dk)
+		d, _ := Draw(&dk)
 		player = append(player, *p)
 		dealer = append(dealer, *d)
 	}
@@ -42,11 +40,11 @@ func initialGame () Game {
 }
 
 func calcBjVals(cs []Card) []int {
-	var nss [][] int
+	var nss [][]int
 	for _, c := range cs {
 		nss = append(nss, c.BjVals())
 	}
-	sums := []int {0}
+	sums := []int{0}
 	for _, ns := range nss {
 		sums = someEach(ns, sums)
 	}
@@ -58,17 +56,17 @@ func calcBjVals(cs []Card) []int {
 	return filtered
 }
 
-func someEach(ms []int, ns []int ) []int {
+func someEach(ms []int, ns []int) []int {
 	var sums []int
 	for _, m := range ms {
 		for _, n := range ns {
-			sums = append(sums, m + n)
+			sums = append(sums, m+n)
 		}
 	}
 	return sums
 }
 
-func filter(xs []int, f func(int) bool)[]int  {
+func filter(xs []int, f func(int) bool) []int {
 	var ys []int
 	for _, x := range xs {
 		if f(x) {
@@ -78,10 +76,9 @@ func filter(xs []int, f func(int) bool)[]int  {
 	return ys
 }
 
-
-func playerTurn (game *Game) (*int, error) {
+func playerTurn(game *Game) (*int, error) {
 	bjVal := new(int)
-	for ; ; {
+	for {
 		bjVals := calcBjVals(game.player)
 		if len(bjVals) == 0 {
 			return nil, &PlayerBurst{}
@@ -91,15 +88,14 @@ func playerTurn (game *Game) (*int, error) {
 		ch, _ := reader.ReadByte()
 		if ch == 's' {
 			sort.Ints(bjVals)
-			bjVal = &bjVals[len(bjVals) - 1]
+			bjVal = &bjVals[len(bjVals)-1]
 			break
 		}
 		if ch == 'h' {
-			rest, c, e := Draw(game.deck)
+			c, e := Draw(&game.deck)
 			if e != nil {
 				return nil, e
 			}
-			game.deck = rest
 			game.player = append(game.player, *c)
 			fmt.Println(*c)
 			continue
@@ -109,31 +105,29 @@ func playerTurn (game *Game) (*int, error) {
 	return bjVal, nil
 }
 
-func dealerTurn (game *Game) (*int, error) {
+func dealerTurn(game *Game) (*int, error) {
 	bjVal := new(int)
-	for ; ;  {
+	for {
 		bjVals := calcBjVals(game.dealer)
 		if len(bjVals) == 0 {
 			fmt.Println(game.dealer)
 			return nil, &DealerBurst{}
 		}
 		sort.Ints(bjVals)
-		maximum := bjVals[len(bjVals) - 1]
+		maximum := bjVals[len(bjVals)-1]
 		if maximum >= 17 {
 			bjVal = &maximum
 			break
 		}
-		rest, c, e := Draw(game.deck)
+		c, e := Draw(&game.deck)
 		if e != nil {
-			return  nil, e
+			return nil, e
 		}
-		game.deck = rest
 		game.dealer = append(game.dealer, *c)
 	}
 	fmt.Println(game.dealer)
 	return bjVal, nil
 }
-
 
 func main() {
 	game := initialGame()
@@ -152,7 +146,7 @@ func main() {
 		return
 	}
 	fmt.Println("Player point is:", *pVal)
-	fmt.Println("Dealer point is:",  *dVal)
+	fmt.Println("Dealer point is:", *dVal)
 	if *pVal > *dVal {
 		fmt.Println("player won")
 	} else {
